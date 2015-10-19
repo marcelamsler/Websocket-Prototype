@@ -16,8 +16,9 @@ namespace WebsocketTest
         public event Action Error;
         public event Action<string> Received;
 
-        public WebsocketService(string webSocketURI) : this (webSocketURI)
-        {
+        public WebsocketService(string webSocketURI) 
+		{
+			this.webSocketURI = webSocketURI;
             websocketClient = new WebSocketClient();
             websocketClient.Opened += OnWebsocketOpened;
             websocketClient.Closed += OnWebsocketClosed;
