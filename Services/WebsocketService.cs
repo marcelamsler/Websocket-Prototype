@@ -3,6 +3,8 @@ using WebSocket.Portable;
 using System.Diagnostics;
 using WebSocket.Portable.Interfaces;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace WebsocketTest
 {
@@ -15,6 +17,9 @@ namespace WebsocketTest
         public event Action Closed;
         public event Action Error;
         public event Action<string> Received;
+		public event Action RetryFailedEvent;
+		private const int NUMBER_OF_RETRIES = 3;
+		private const int INTERVAL_IN_MILLIS = 500;
 
         public WebsocketService(string webSocketURI) 
 		{
@@ -24,12 +29,12 @@ namespace WebsocketTest
             websocketClient.Closed += OnWebsocketClosed;
             websocketClient.MessageReceived += OnWebsocketReceived;
             websocketClient.Error += OnWebsocketError;
-            ConnectWithWebsocket(this.webSocketURI);
+            
         }
 
-        private async void ConnectWithWebsocket(string webSocketEndpoint) 
+        public void ConnectWithWebsocket() 
         {
-            await websocketClient.OpenAsync(webSocketEndpoint);
+			TryToConnect(NUMBER_OF_RETRIES, INTERVAL_IN_MILLIS);
         }
 
         void OnWebsocketOpened()
@@ -44,23 +49,59 @@ namespace WebsocketTest
             Closed();
         }
 
-        void OnWebsocketReceived(IWebSocketMessage frame)
-        {
-            Debug.WriteLine("Websocket Message Received: " + frame.ToString());
-
-            var payload = frame.ToString();
-            var indexOfBegin = payload.IndexOf("'");
-            var message = payload.Substring(indexOfBegin + 1, payload.Length - 2);
-
-            var parsedMessage = JObject.Parse(message);
-            Received(parsedMessage.ToString());
-        }
 
         void OnWebsocketError(Exception e)
         {
             Debug.WriteLine("Websocket Error" + e.Message);
             Error();
         }
+
+		public void sendMultiple (List<string> messages)
+		{
+			foreach(string message in messages){
+				websocketClient.SendAsync (message);
+				//await Task.Delay (1000);
+			}
+			Debug.WriteLine ("sent " + messages.ToArray().Length + " messages");
+		}
+
+		int numberOfReceivedMessages = 0;
+
+		void OnWebsocketReceived(IWebSocketMessage frame)
+		{
+			WebsocketEchoMessage echoMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<WebsocketEchoMessage> (frame.ToString());
+
+
+			numberOfReceivedMessages++;
+//			Received ("Websocket message: "+numberOfReceivedMessages+" received: \n"+echoMessage.message + " \n\tat time: " + echoMessage.timestamp);
+			Received ("Websocket message: "+numberOfReceivedMessages+"");
+		}
+
+		private async void TryToConnect(int retries, int intervalInMillis)
+		{
+			int i = 0;
+			while(i <= retries){
+				try
+				{
+					Debug.WriteLine("retry: " + i + ":"); 
+					await websocketClient.OpenAsync(webSocketURI);
+					Debug.WriteLine("successful");
+					return;
+				}
+				catch
+				{
+					Debug.WriteLine("failed");
+					if (retries == i) {
+						Debug.WriteLine ("could not establish connection");
+						RetryFailedEvent ();
+						return;
+					}
+					intervalInMillis *= 2;
+				}
+				i++;
+				await Task.Delay(intervalInMillis);
+			}
+		}
     }
 }
 

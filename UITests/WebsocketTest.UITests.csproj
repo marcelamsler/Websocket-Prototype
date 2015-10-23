@@ -49,20 +49,14 @@
     <Reference Include="WebSocket.Portable">
       <HintPath>..\packages\WebSocket.Portable.Core.1.2.6\lib\portable-net45+win+wpa81+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10\WebSocket.Portable.dll</HintPath>
     </Reference>
-    <Reference Include="Xamarin.UITest">
-      <HintPath>..\packages\Xamarin.UITest.1.1.1\lib\Xamarin.UITest.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Xamarin.UITest">
+      <HintPath>..\packages\Xamarin.UITest.1.2.0\lib\Xamarin.UITest.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\iOS\WebsocketTest.iOS.csproj">
-      <Project>{A21FAEA6-D82B-4447-AF97-A8658F029DAD}</Project>
-      <Name>WebsocketTest.iOS</Name>
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-      <Private>False</Private>
-    </ProjectReference>
     <ProjectReference Include="..\Droid\WebsocketTest.Droid.csproj">
       <Project>{435FCEF3-159C-4FAA-B5DA-217995033263}</Project>
       <Name>WebsocketTest.Droid</Name>

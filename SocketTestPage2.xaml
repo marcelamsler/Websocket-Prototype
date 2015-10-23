@@ -5,9 +5,10 @@
 			<StackLayout.Children>
 				<Label x:Name="valueLabel" Text="Message" FontSize="Large" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
 				<Label x:Name="debugLabel" Text="Debug" FontSize="Large" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
-				<Button Text="Connect" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" Clicked="OnConnect" />
-				<Button Text="Send Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" Clicked="OnSingleMessage" />
-				<Button Text="Test Multiple Messages" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" Clicked="OnMultipleMessages" />
+				<Button x:Name="connectButton" Text="Connect" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="sendMessageButton" Text="Send Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="testMultipleMessagesButton" Text="Test Multiple Messages" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+
 			</StackLayout.Children>
 		</StackLayout>
 	</ContentPage.Content>
