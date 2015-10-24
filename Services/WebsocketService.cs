@@ -18,8 +18,6 @@ namespace WebsocketTest
         public event Action Error;
         public event Action<string> Received;
 		public event Action RetryFailedEvent;
-		private const int NUMBER_OF_RETRIES = 3;
-		private const int INTERVAL_IN_MILLIS = 500;
 
         public WebsocketService(string webSocketURI) 
 		{
@@ -32,20 +30,23 @@ namespace WebsocketTest
             
         }
 
-        public void ConnectWithWebsocket() 
+
+		public async Task ConnectWithWebsocket(int numberOfRetries, int intervalInMillis) 
         {
-			TryToConnect(NUMBER_OF_RETRIES, INTERVAL_IN_MILLIS);
+			await TryToConnect(numberOfRetries, intervalInMillis);
         }
 
         void OnWebsocketOpened()
         {
             Debug.WriteLine("Opened Websocket");
+			//websocketClient.AutoSendPongResponse = true;
             Opened();
         }
 
         void OnWebsocketClosed()
         {
             Debug.WriteLine("Closed Websocket");
+
             Closed();
         }
 
@@ -56,28 +57,29 @@ namespace WebsocketTest
             Error();
         }
 
-		public void sendMultiple (List<string> messages)
+		public async Task<int> SendMultiple (List<string> messages)
 		{
 			foreach(string message in messages){
-				websocketClient.SendAsync (message);
-				//await Task.Delay (1000);
+				await websocketClient.SendAsync (message);
+				Debug.WriteLine ("message sent");
 			}
 			Debug.WriteLine ("sent " + messages.ToArray().Length + " messages");
+			return messages.ToArray ().Length;
 		}
 
-		int numberOfReceivedMessages = 0;
 
+		int numberOfReceivedMessages = 0;
 		void OnWebsocketReceived(IWebSocketMessage frame)
 		{
 			WebsocketEchoMessage echoMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<WebsocketEchoMessage> (frame.ToString());
-
+			Debug.WriteLine (echoMessage.message + " received ");
 
 			numberOfReceivedMessages++;
-//			Received ("Websocket message: "+numberOfReceivedMessages+" received: \n"+echoMessage.message + " \n\tat time: " + echoMessage.timestamp);
-			Received ("Websocket message: "+numberOfReceivedMessages+"");
+			Received ("Websocket message: "+numberOfReceivedMessages+" received: \n"+echoMessage.message + " \n\tat time: " + echoMessage.timestamp);
+			Debug.WriteLine (echoMessage.message + " sent to debug  label ");
 		}
 
-		private async void TryToConnect(int retries, int intervalInMillis)
+		private async Task TryToConnect(int retries, int intervalInMillis)
 		{
 			int i = 0;
 			while(i <= retries){
@@ -88,11 +90,13 @@ namespace WebsocketTest
 					Debug.WriteLine("successful");
 					return;
 				}
-				catch
+				catch (Exception ex)
 				{
 					Debug.WriteLine("failed");
+
+
 					if (retries == i) {
-						Debug.WriteLine ("could not establish connection");
+						Debug.WriteLine ("could not establish connection: "+ex.Message);
 						RetryFailedEvent ();
 						return;
 					}
