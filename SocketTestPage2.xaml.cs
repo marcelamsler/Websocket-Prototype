@@ -16,34 +16,52 @@ namespace WebsocketTest
 
         public SocketTestPage2()
         {
+			try{
             InitializeComponent();
 			connectButton.Clicked += OnConnect;
-			sendMessageButton.Clicked += OnSingleMessage;
+			sendMessageButton.Clicked += SendMessage;
 			testMultipleMessagesButton.Clicked += OnMultipleMessages;
-
-			websocket = new WebsocketService("ws://drallodmmprototype.azurewebsites.net/dmmSocketConnector.ashx");
-            websocket.Opened += () => debugLabel.Text = "Connection Open";
-            websocket.Closed += () => debugLabel.Text = "Connection closed";
-            websocket.Error += () => debugLabel.Text = "Connection error";
-            websocket.Received += (parsedMessage) => valueLabel.Text = parsedMessage;
-			websocket.RetryFailedEvent += () => debugLabel.Text = "Could not establish connection";
+			sendRegister.Clicked += OnRegister;
+			sendDeregister.Clicked += OnDeregister;
+			sendJoin.Clicked += OnJoin;
+			websocket = new WebsocketService();
+            //websocket.Reconnected += () => debugLabel.Text = "Reconnected";
+			//websocket.Closed += () => debugLabel.Text = "Connection Closed";
+            //websocket.Error += () => debugLabel.Text = "Connection error";
+			//websocket.Received += (parsedMessage) => {	};
+			//websocket.RetryFailedEvent += (string msg) => debugLabel.Text = msg;
+			}
+			catch (Exception e){
+				Debug.WriteLine (e.Message);
+			}
         }
+
+		void WriteToLabel(string parsedMessage)
+		{/*
+			Device.BeginInvokeOnMainThread (() => {
+				valueLabel.Text = parsedMessage;
+			});
+*/
+
+		}
+
 		private async void OnConnect(object sender, EventArgs e) 
 		{
 			
-			await websocket.ConnectWithWebsocket(3, 500);
+			await websocket.ConnectWithWebsocket();
 
 			Debug.WriteLine("on connect");
 
 		}
-		private async void OnSingleMessage(object sender, EventArgs e) 
+
+		private void SendMessage(object sender, EventArgs e) 
 		{
 			try
 			{
-				List<string> messages = new List<string>();
-				messages.Add ("{message: \"SINGLE MESSAGE\"}");
-				await websocket.SendMultiple(messages);
+				
+				websocket.Send("Wir senden eine Nachricth. Okay? ");
 				Debug.WriteLine("sent 1 message");
+				
 			}
 			catch(Exception ex)
 			{
@@ -52,29 +70,47 @@ namespace WebsocketTest
 			}
 
 		}
-        private async void OnMultipleMessages(object sender, EventArgs e) 
+
+
+        private void OnMultipleMessages(object sender, EventArgs e) 
         {
-			int amountOfMessagesSent = 0;
 			try
 			{
 				int amountOfMessagesToSend = 100;
-				List<string> messages = new List<string>();
 				for(int i = 1; i <= amountOfMessagesToSend; i++)
 				{
-					messages.Add ("{message: \"MULTIPLE: NO: "+i+" \"}");
+					websocket.Send("{message: \"MULTIPLE: NO: "+i+" \"}");
 				}
-				amountOfMessagesSent = await websocket.SendMultiple(messages);
 			}
 			catch(Exception ex)
 			{
 				Debug.WriteLine (ex.Message);
-
 			}
-			Debug.WriteLine (amountOfMessagesSent);
 
     }
 			
+		private async void OnRegister(object sender, EventArgs e)
+		{
+			try
+			{
+				await websocket.Register();
+			}
+			catch(Exception ex)
+			{
+				Debug.WriteLine (ex.Message);
+				
+			}
+		}
 
+		private async void OnDeregister (object sender, EventArgs e)
+		{
+			await websocket.Deregister();
+		}
+
+		private async void OnJoin (object sender, EventArgs e)
+		{
+			await websocket.Join();
+		}
     }
 }
 

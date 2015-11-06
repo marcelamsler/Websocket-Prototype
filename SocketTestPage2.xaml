@@ -3,11 +3,14 @@
 	<ContentPage.Content>
 		<StackLayout>
 			<StackLayout.Children>
-				<Label x:Name="valueLabel" Text="Message" FontSize="Large" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
-				<Label x:Name="debugLabel" Text="Debug" FontSize="Large" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
-				<Button x:Name="connectButton" Text="Connect" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Label x:Name="valueLabel" Text="Message" FontSize="Large" HorizontalOptions="Center" VerticalOptions="Start" />
+				<Label x:Name="debugLabel" Text="Debug" FontSize="Large" HorizontalOptions="Center" VerticalOptions="Start" />
+				<Button x:Name="connectButton" Text="Connect" HorizontalOptions="Center" VerticalOptions="Start"/>
 				<Button x:Name="sendMessageButton" Text="Send Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
 				<Button x:Name="testMultipleMessagesButton" Text="Test Multiple Messages" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="sendRegister" Text="Send Register Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="sendDeregister" Text="Send De-Register Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="sendJoin" Text="Send Join Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
 
 			</StackLayout.Children>
 		</StackLayout>

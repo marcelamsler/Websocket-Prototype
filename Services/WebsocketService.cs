@@ -1,53 +1,63 @@
 ﻿using System;
-using WebSocket.Portable;
-using System.Diagnostics;
-using WebSocket.Portable.Interfaces;
-using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using dralloMultiPlayer.Messages;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using WebSocket.Portable;
+using WebSocket.Portable.Interfaces;
+using Xamarin.Forms;
+using Microsoft.AspNet.SignalR.Client;
 
 namespace WebsocketTest
 {
     public class WebsocketService
     {
-        private WebSocketClient websocketClient;
-        private string webSocketURI;
+		private const string webSocketURI = "http://drallodmmprototype.azurewebsites.net/connect";
 
-        public event Action Opened;
+        public event Action Reconnected;
         public event Action Closed;
         public event Action Error;
-        public event Action<string> Received;
-		public event Action RetryFailedEvent;
-
-        public WebsocketService(string webSocketURI) 
-		{
-			this.webSocketURI = webSocketURI;
-            websocketClient = new WebSocketClient();
-            websocketClient.Opened += OnWebsocketOpened;
-            websocketClient.Closed += OnWebsocketClosed;
-            websocketClient.MessageReceived += OnWebsocketReceived;
-            websocketClient.Error += OnWebsocketError;
-            
-        }
+        //public event Action<string> Received;
+		public event Action<string> RetryFailedEvent;
+		private bool keepAliveActive = true;
+		private const string challengeId = "45435-2435-245-2345-234";
+		private const string deviceId = "123123123";
+		private const string userName = "colbinator";
+		Connection connection = new Connection (webSocketURI);
 
 
-		public async Task ConnectWithWebsocket(int numberOfRetries, int intervalInMillis) 
+		public WebsocketService(){
+			connection.Closed += OnWebsocketClosed;
+			connection.Reconnected += OnWebsocketReconnected;
+			connection.Error += OnWebsocketError;
+			connection.Received += OnWebsocketReceived;
+		}
+
+
+		public async Task ConnectWithWebsocket() 
         {
-			await TryToConnect(numberOfRetries, intervalInMillis);
+			try{
+				await connection.Start();
+			}
+			catch (Exception e) {
+				
+				Debug.WriteLine ("could not connect");
+			}
         }
 
-        void OnWebsocketOpened()
+        void OnWebsocketReconnected()
         {
-            Debug.WriteLine("Opened Websocket");
-			//websocketClient.AutoSendPongResponse = true;
-            Opened();
+            Debug.WriteLine("Reconnected Websocket");
+            Reconnected();
         }
 
-        void OnWebsocketClosed()
+        async void OnWebsocketClosed()
         {
             Debug.WriteLine("Closed Websocket");
-
-            Closed();
+			Closed();
         }
 
 
@@ -57,55 +67,101 @@ namespace WebsocketTest
             Error();
         }
 
-		public async Task<int> SendMultiple (List<string> messages)
+		public void Send(string msg)
 		{
-			foreach(string message in messages){
-				await websocketClient.SendAsync (message);
-				Debug.WriteLine ("message sent");
+			
+			try{
+				EchoWithTimestamp echo = new EchoWithTimestamp (msg);
+				var msgFrame = new MessageFrame("echo", echo);
+				string message = JsonConvert.SerializeObject (msgFrame);
+
+				Debug.WriteLine(message);
+				connection.Send(message);
 			}
-			Debug.WriteLine ("sent " + messages.ToArray().Length + " messages");
-			return messages.ToArray ().Length;
+			catch (Exception e){
+				Debug.WriteLine ("exception in Send() happened"+ e.Message);
+			}
+
+		}
+		
+		public async Task Register ()
+		{
+			var registerMsg = new RegisterMessage ();
+			registerMsg.challengeId = challengeId;
+			registerMsg.deviceId = deviceId;
+			var registerMessage = new MessageFrame("register", registerMsg);
+
+			string message = JsonConvert.SerializeObject (registerMessage);
+
+			await connection.Send(message);
+			Debug.WriteLine ("sent register message: " +  message);
 		}
 
-
-		int numberOfReceivedMessages = 0;
-		void OnWebsocketReceived(IWebSocketMessage frame)
+		public async Task Deregister ()
 		{
-			WebsocketEchoMessage echoMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<WebsocketEchoMessage> (frame.ToString());
-			Debug.WriteLine (echoMessage.message + " received ");
+			var deregisterMsg = new DeregisterMessage ();
+			deregisterMsg.challengeId = challengeId;
+			deregisterMsg.deviceId = deviceId;
+			var deregisterMessage = new MessageFrame ("deregister", deregisterMsg);
+			
+			string message = JsonConvert.SerializeObject (deregisterMessage);
 
-			numberOfReceivedMessages++;
-			Received ("Websocket message: "+numberOfReceivedMessages+" received: \n"+echoMessage.message + " \n\tat time: " + echoMessage.timestamp);
-			Debug.WriteLine (echoMessage.message + " sent to debug  label ");
+			await connection.Send(message);
+
+			Debug.WriteLine ("sent deregister message");
 		}
 
-		private async Task TryToConnect(int retries, int intervalInMillis)
+		public async Task Join ()
 		{
-			int i = 0;
-			while(i <= retries){
-				try
-				{
-					Debug.WriteLine("retry: " + i + ":"); 
-					await websocketClient.OpenAsync(webSocketURI);
-					Debug.WriteLine("successful");
-					return;
-				}
-				catch (Exception ex)
-				{
-					Debug.WriteLine("failed");
+			var joinMsg = new JoinMessage ();
+			joinMsg.challengeId = challengeId;
+			joinMsg.userName = userName;
+			var joinMessage = new MessageFrame ("join", joinMsg);
 
+			string message = JsonConvert.SerializeObject (joinMessage);
+			await connection.Send(message);
 
-					if (retries == i) {
-						Debug.WriteLine ("could not establish connection: "+ex.Message);
-						RetryFailedEvent ();
-						return;
-					}
-					intervalInMillis *= 2;
-				}
-				i++;
-				await Task.Delay(intervalInMillis);
+			Debug.WriteLine ("sent join message");
+		}
+
+	//	Object mutex = new Object();
+		//Counter numberOfReceivedMessages = new Counter(); 
+		 void OnWebsocketReceived(string message)
+		{
+			Debug.WriteLine ("recevid message:"+ message);
+
+			var messageFrame = JsonConvert.DeserializeObject<MessageFrame>(message);
+			object typedMessage;// = new object();
+
+			switch (messageFrame.messageType)
+			{
+			case "invite":
+				typedMessage = JsonConvert.DeserializeObject<JoinMessage>(messageFrame.data.ToString());
+				break;
+			case "echo":
+				typedMessage = JsonConvert.DeserializeObject<EchoWithTimestamp>(messageFrame.data.ToString());
+				break;
+			default:
+				throw new Exception("invalid message type");
 			}
+
+			Debug.WriteLine (typedMessage.ToString() + " received ");
+			//numberOfReceivedMessages.inc ();
+			//int numberOfReceivedMessages = 55;
+			//Received ("Websocket message: "+000+" received: \n"+message + "");
+			Debug.WriteLine (typedMessage + " sent to debug  label ");
 		}
     }
+
+//	public class Counter { 
+//		private int a = 0;
+//
+//		public void inc() { 
+//			lock (this) {
+//				a++;
+//			}
+//		}
+//			
+//	}
 }
 
