@@ -58,8 +58,12 @@ namespace WebsocketTest
 		{
 			try
 			{
-				
-				websocket.Send("Wir senden eine Nachricth. Okay? ");
+				string x = "";
+				for(var i = 0; i<(1024); i++) { 
+					x += "M";
+				}
+
+				websocket.Send(x);
 				Debug.WriteLine("sent 1 message");
 				
 			}
@@ -72,13 +76,14 @@ namespace WebsocketTest
 		}
 
 
-        private void OnMultipleMessages(object sender, EventArgs e) 
+        private async void OnMultipleMessages(object sender, EventArgs e) 
         {
 			try
 			{
-				int amountOfMessagesToSend = 100;
+				int amountOfMessagesToSend = 1000;
 				for(int i = 1; i <= amountOfMessagesToSend; i++)
 				{
+					await Task.Delay(TimeSpan.FromMilliseconds(100));
 					websocket.Send("{message: \"MULTIPLE: NO: "+i+" \"}");
 				}
 			}

@@ -10,7 +10,7 @@ using WebSocket.Portable;
 using WebSocket.Portable.Interfaces;
 using Xamarin.Forms;
 using Microsoft.AspNet.SignalR.Client;
-
+using System.Collections.ObjectModel;
 namespace WebsocketTest
 {
     public class WebsocketService
@@ -27,13 +27,22 @@ namespace WebsocketTest
 		private const string deviceId = "123123123";
 		private const string userName = "colbinator";
 		Connection connection = new Connection (webSocketURI);
-
+		ObservableCollection<string> mycollection = new ObservableCollection<string> ();
 
 		public WebsocketService(){
 			connection.Closed += OnWebsocketClosed;
 			connection.Reconnected += OnWebsocketReconnected;
 			connection.Error += OnWebsocketError;
 			connection.Received += OnWebsocketReceived;
+			mycollection.CollectionChanged += Mycollection_CollectionChanged;
+		}
+
+		void Mycollection_CollectionChanged (object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			foreach (string m in e.NewItems) 
+			{
+				bla (m);
+			}
 		}
 
 
@@ -128,6 +137,11 @@ namespace WebsocketTest
 		//Counter numberOfReceivedMessages = new Counter(); 
 		 void OnWebsocketReceived(string message)
 		{
+			mycollection.Add (message);
+
+		}
+
+		void bla(string message){
 			Debug.WriteLine ("recevid message:"+ message);
 
 			var messageFrame = JsonConvert.DeserializeObject<MessageFrame>(message);
@@ -142,14 +156,14 @@ namespace WebsocketTest
 				typedMessage = JsonConvert.DeserializeObject<EchoWithTimestamp>(messageFrame.data.ToString());
 				break;
 			default:
-				throw new Exception("invalid message type");
+				break;
 			}
 
-			Debug.WriteLine (typedMessage.ToString() + " received ");
+			//Debug.WriteLine (typedMessage.ToString() + " received ");
 			//numberOfReceivedMessages.inc ();
 			//int numberOfReceivedMessages = 55;
 			//Received ("Websocket message: "+000+" received: \n"+message + "");
-			Debug.WriteLine (typedMessage + " sent to debug  label ");
+			//Debug.WriteLine (typedMessage + " sent to debug  label ");
 		}
     }
 
