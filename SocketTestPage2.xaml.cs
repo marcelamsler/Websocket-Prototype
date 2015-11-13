@@ -17,33 +17,21 @@ namespace WebsocketTest
         public SocketTestPage2()
         {
 			try{
-            InitializeComponent();
-			connectButton.Clicked += OnConnect;
-			sendMessageButton.Clicked += SendMessage;
-			testMultipleMessagesButton.Clicked += OnMultipleMessages;
-			sendRegister.Clicked += OnRegister;
-			sendDeregister.Clicked += OnDeregister;
-			sendJoin.Clicked += OnJoin;
-			websocket = new WebsocketService();
-            //websocket.Reconnected += () => debugLabel.Text = "Reconnected";
-			//websocket.Closed += () => debugLabel.Text = "Connection Closed";
-            //websocket.Error += () => debugLabel.Text = "Connection error";
-			//websocket.Received += (parsedMessage) => {	};
-			//websocket.RetryFailedEvent += (string msg) => debugLabel.Text = msg;
+	            InitializeComponent();
+				connectButton.Clicked += OnConnect;
+				sendMessageButton.Clicked += SendMessage;
+				testMultipleMessagesButton.Clicked += OnMultipleMessages;
+				sendRegister.Clicked += OnRegister;
+				sendDeregister.Clicked += OnDeregister;
+				sendJoin.Clicked += OnJoin;
+				websocket = new WebsocketService();
+				websocket.Closed += (closedMessage) => debugLabel.Text = closedMessage;
+				websocket.Received += (parsedMessage) => debugLabel.Text = parsedMessage;
 			}
 			catch (Exception e){
 				Debug.WriteLine (e.Message);
 			}
         }
-
-		void WriteToLabel(string parsedMessage)
-		{/*
-			Device.BeginInvokeOnMainThread (() => {
-				valueLabel.Text = parsedMessage;
-			});
-*/
-
-		}
 
 		private async void OnConnect(object sender, EventArgs e) 
 		{
