@@ -66,9 +66,6 @@
     <Reference Include="Xamarin.Forms.Xaml">
       <HintPath>packages\Xamarin.Forms.1.5.1.6471\lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.Xaml.dll</HintPath>
     </Reference>
-    <Reference Include="Messages">
-      <HintPath>..\dralloMultiPlayer\Messages\Messages\obj\Debug\Messages.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System.Net.Http.Extensions">
       <HintPath>packages\Microsoft.Net.Http.2.2.29\lib\portable-net45+win8\System.Net.Http.Extensions.dll</HintPath>
@@ -93,5 +90,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dralloMultiPlayer\Messages\Messages\Messages.csproj">
+      <Project>{217FA87D-7782-49E5-8D3F-814FC90E87B9}</Project>
+      <Name>Messages</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

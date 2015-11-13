@@ -41,7 +41,7 @@ namespace WebsocketTest
 		{
 			foreach (string m in e.NewItems) 
 			{
-				bla (m);
+				HandleCollectionChanged (m);
 			}
 		}
 
@@ -60,20 +60,20 @@ namespace WebsocketTest
         void OnWebsocketReconnected()
         {
             Debug.WriteLine("Reconnected Websocket");
-            Reconnected();
+            //Reconnected();
         }
 
         async void OnWebsocketClosed()
         {
             Debug.WriteLine("Closed Websocket");
-			Closed();
+			//Closed();
         }
 
 
         void OnWebsocketError(Exception e)
         {
             Debug.WriteLine("Websocket Error" + e.Message);
-            Error();
+            //Error();
         }
 
 		public void Send(string msg)
@@ -133,19 +133,17 @@ namespace WebsocketTest
 			Debug.WriteLine ("sent join message");
 		}
 
-	//	Object mutex = new Object();
-		//Counter numberOfReceivedMessages = new Counter(); 
 		 void OnWebsocketReceived(string message)
 		{
 			mycollection.Add (message);
 
 		}
 
-		void bla(string message){
+		void HandleCollectionChanged(string message){
 			Debug.WriteLine ("recevid message:"+ message);
 
 			var messageFrame = JsonConvert.DeserializeObject<MessageFrame>(message);
-			object typedMessage;// = new object();
+			object typedMessage;
 
 			switch (messageFrame.messageType)
 			{
@@ -159,23 +157,9 @@ namespace WebsocketTest
 				break;
 			}
 
-			//Debug.WriteLine (typedMessage.ToString() + " received ");
-			//numberOfReceivedMessages.inc ();
-			//int numberOfReceivedMessages = 55;
 			//Received ("Websocket message: "+000+" received: \n"+message + "");
-			//Debug.WriteLine (typedMessage + " sent to debug  label ");
 		}
     }
 
-//	public class Counter { 
-//		private int a = 0;
-//
-//		public void inc() { 
-//			lock (this) {
-//				a++;
-//			}
-//		}
-//			
-//	}
 }
 
