@@ -6,7 +6,8 @@
 				<Label x:Name="valueLabel" Text="Message" FontSize="Large" HorizontalOptions="Center" VerticalOptions="Start" />
 				<Label x:Name="debugLabel" Text="Debug" FontSize="Large" HorizontalOptions="Center" VerticalOptions="Start" />
 				<Button x:Name="connectButton" Text="Connect" HorizontalOptions="Center" VerticalOptions="Start"/>
-				<Button x:Name="sendMessageButton" Text="Send Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="sendEventMessageButton" Text="Send Activity Event" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
+				<Button x:Name="sendRecordMessageButton" Text="Send Activity Record" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
 				<Button x:Name="testMultipleMessagesButton" Text="Test Multiple Messages" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
 				<Button x:Name="sendRegister" Text="Send Register Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>
 				<Button x:Name="sendDeregister" Text="Send De-Register Message" HorizontalOptions="Center" VerticalOptions="CenterAndExpand"/>

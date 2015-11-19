@@ -35,7 +35,10 @@
     <Compile Include="SocketTestPage2.xaml.cs">
       <DependentUpon>SocketTestPage2.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Services\WebsocketService.cs" />
+    <Compile Include="Services\ConnectionService.cs" />
+    <Compile Include="Services\ConnectionController.cs" />
+    <Compile Include="EngineEvents\ActivityEvent.cs" />
+    <Compile Include="EngineEvents\ActivityRecord.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="packages\Xamarin.Forms.1.5.0.6447\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('packages\Xamarin.Forms.1.5.0.6447\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
@@ -90,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
+    <Folder Include="EngineEvents\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\dralloMultiPlayer\Messages\Messages\Messages.csproj">

@@ -7,26 +7,30 @@ using System.Threading.Tasks;
 using WebSocket.Portable.Interfaces;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using dralloMultiPlayer.Messages;
 
 namespace WebsocketTest
 {
     public partial class SocketTestPage2 : ContentPage
     {
-        WebsocketService websocket;
+        ConnectionController connection;
 
         public SocketTestPage2()
         {
 			try{
 	            InitializeComponent();
 				connectButton.Clicked += OnConnect;
-				sendMessageButton.Clicked += SendMessage;
+				sendEventMessageButton.Clicked += SendActivityEvent;
+				sendRecordMessageButton.Clicked += SendActivityRecord;
 				testMultipleMessagesButton.Clicked += OnMultipleMessages;
 				sendRegister.Clicked += OnRegister;
 				sendDeregister.Clicked += OnDeregister;
 				sendJoin.Clicked += OnJoin;
-				websocket = new WebsocketService();
-				websocket.Closed += (closedMessage) => debugLabel.Text = closedMessage;
-				websocket.Received += (parsedMessage) => debugLabel.Text = parsedMessage;
+
+				connection = new ConnectionController();
+				connection.Closed += (closedMessage) => {};
+				connection.InvitationReceived += (inviteMessage) => {};
+				connection.JoinAcceptedReceived += (joinAcceptedMessage) => {};
 			}
 			catch (Exception e){
 				Debug.WriteLine (e.Message);
@@ -35,58 +39,59 @@ namespace WebsocketTest
 
 		private async void OnConnect(object sender, EventArgs e) 
 		{
-			
-			await websocket.ConnectWithWebsocket();
+			await connection.Connect();
 
 			Debug.WriteLine("on connect");
-
 		}
 
-		private void SendMessage(object sender, EventArgs e) 
+		private void SendActivityEvent(object sender, EventArgs e) 
 		{
 			try
 			{
-				string x = "";
-				for(var i = 0; i<(1024); i++) { 
-					x += "M";
-				}
-
-				websocket.Send(x);
-				Debug.WriteLine("sent 1 message");
-				
+				connection.Send(new ActivityEvent());
+				Debug.WriteLine("sent 1 Activity Event");
 			}
-			catch(Exception ex)
-			{
+			catch(Exception ex) {
 				Debug.WriteLine (ex.Message);
+			}
+		}
 
+		private void SendActivityRecord(object sender, EventArgs e) 
+		{
+			try
+			{
+				connection.Send(new ActivityRecord());
+				Debug.WriteLine("sent 1 Activity Record");
+			}
+			catch(Exception ex) {
+				Debug.WriteLine (ex.Message);
 			}
 
 		}
-
 
         private async void OnMultipleMessages(object sender, EventArgs e) 
         {
 			try
 			{
-				int amountOfMessagesToSend = 1000;
+				int amountOfMessagesToSend = 100;
 				for(int i = 1; i <= amountOfMessagesToSend; i++)
 				{
 					await Task.Delay(TimeSpan.FromMilliseconds(100));
-					websocket.Send("{message: \"MULTIPLE: NO: "+i+" \"}");
+					connection.Send(new ActivityEvent());
+
 				}
 			}
 			catch(Exception ex)
 			{
 				Debug.WriteLine (ex.Message);
 			}
-
-    }
-			
-		private async void OnRegister(object sender, EventArgs e)
+	    }
+				
+		private void OnRegister(object sender, EventArgs e)
 		{
 			try
 			{
-				await websocket.Register();
+				connection.Register("mydeviceid12341234", Guid.NewGuid());
 			}
 			catch(Exception ex)
 			{
@@ -95,14 +100,14 @@ namespace WebsocketTest
 			}
 		}
 
-		private async void OnDeregister (object sender, EventArgs e)
+		private void OnDeregister (object sender, EventArgs e)
 		{
-			await websocket.Deregister();
+			connection.Deregister ("mydeviceid12341234", Guid.NewGuid ());
 		}
 
-		private async void OnJoin (object sender, EventArgs e)
+		private void OnJoin (object sender, EventArgs e)
 		{
-			await websocket.Join();
+			connection.Join ("usernamelalala", Guid.NewGuid());
 		}
     }
 }
