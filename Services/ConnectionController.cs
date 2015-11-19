@@ -18,165 +18,154 @@ using Xamarin.Forms;
 
 namespace WebsocketTest
 {
-    public class ConnectionController
-    {
-		
+	public class ConnectionController
+	{
 		public event Action<string> Closed;
-        public event Action<string> InvitationReceived;
+		public event Action<string> InvitationReceived;
 		public event Action<string> JoinAcceptedReceived;
 		public event Action<string> JoinRejectedReceived;
 		private const string connectionUri = "http://drallomultiplayermanager.azurewebsites.net/connect";
 		private const string userName = "colbinator";
 		private ConnectionService connectionService = new ConnectionService (connectionUri);
 		private ObservableCollection<string> receivedMessagesCollection = new ObservableCollection<string> ();
-		private JsonSerializerSettings jsonSerializerSettings; 
-		
-		public ConnectionController(){
+		private JsonSerializerSettings jsonSerializerSettings;
+
+		public ConnectionController ()
+		{
 			connectionService.Closed += OnConnectionClosed;
 			connectionService.Error += OnConnectionError;
 			connectionService.Received += OnMessageReceived;
 			connectionService.Reconnecting += OnConnectionReconnecting;
 			connectionService.Reconnected += OnConnectionReconnected;
 
-			receivedMessagesCollection.CollectionChanged += ReceivedMessagesCollection_CollectionChanged;
-
-			jsonSerializerSettings = new JsonSerializerSettings() { 
+			jsonSerializerSettings = new JsonSerializerSettings () { 
 				TypeNameHandling = TypeNameHandling.All
 			};
 
 		}
 
-		private void OnConnectionReconnecting()
+		private void OnConnectionReconnecting ()
 		{
 			Debug.WriteLine ("Reconnecting...");
 		}
-		private void OnConnectionReconnected()
+
+		private void OnConnectionReconnected ()
 		{
 			Debug.WriteLine ("Reconnected! ");
 		}
 
-
-
-		private void ReceivedMessagesCollection_CollectionChanged (object sender, NotifyCollectionChangedEventArgs ev)
+		public async Task Connect ()
 		{
-			try{	
-				foreach (string m in ev.NewItems) {
-					HandleCollectionChanged (m);
-				}
-			} 
-			catch (Exception ex){
-				Debug.WriteLine ("Exception in 'OnWebsocketReceivedHandler':  " + ex.Message);
-			}
-		}
-
-
-		public async Task Connect() 
-        {
-			try{
-				await connectionService.Connect();
-			}
-			catch (Exception e) {
+			try {
+				await connectionService.Connect ();
+			} catch (Exception e) {
 				
 				Debug.WriteLine ("could not connect: " + e.Message);
 			}
-        }
+		}
 
-        void OnConnectionClosed()
-        {
-            Debug.WriteLine("Closed Websocket");
-
+		void OnConnectionClosed ()
+		{
+			Debug.WriteLine ("Closed Websocket");
 			Closed ("connection closed");
-
-        }
-
-
-        private void OnConnectionError(Exception e)
-        {
-				Debug.WriteLine ("Websocket Error: " + e.Message);
-        }
-
-		public async Task Send(ActivityRecord input)
-		{
-					string message = JsonConvert.SerializeObject (input, jsonSerializerSettings);
-					await Send(message);
-		}
-		public async Task Send(ActivityEvent input)
-		{
-				string message = JsonConvert.SerializeObject (input, jsonSerializerSettings);
-				await Send(message);
 		}
 
-		private async Task Send(string msg) 
+		private void OnConnectionError (Exception e)
+		{
+			Debug.WriteLine ("Websocket Error: " + e.Message);
+		}
+
+		public async Task Send (ActivityRecord input)
+		{
+			string message = JsonConvert.SerializeObject (input, jsonSerializerSettings);
+			await Send (message);
+		}
+
+		public async Task Send (ActivityEvent input)
+		{
+			string message = JsonConvert.SerializeObject (input, jsonSerializerSettings);
+			await Send (message);
+		}
+
+		private async Task Send (string msg)
 		{
 			try {
-				Debug.WriteLine("--------> send: "+ msg);
-				await connectionService.Send(msg);
-			}
-			catch (Exception e){
-				Debug.WriteLine ("exception in Send() happened:  "+ e.Message);
+				Debug.WriteLine ("--------> send: " + msg);
+				await connectionService.Send (msg);
+			} catch (Exception e) {
+				Debug.WriteLine ("exception in Send() happened:  " + e.Message);
 			}
 		}
 
 		public async void Register (string deviceId, Guid challengeId)
 		{
 			var registerMsg = new RegisterMessage (deviceId, challengeId);
-
 			string message = JsonConvert.SerializeObject (registerMsg, jsonSerializerSettings);
-
-			await connectionService.Send(message);
-			Debug.WriteLine ("sent register message: " +  message);
+			await connectionService.Send (message);
+			Debug.WriteLine ("sent register message: " + message);
 		}
 
 		public async void Deregister (string deviceId, Guid multiplayerChallengeId)
 		{
 			var deregisterMsg = new DeregisterMessage (deviceId, multiplayerChallengeId);
 			string message = JsonConvert.SerializeObject (deregisterMsg, jsonSerializerSettings);
-			await connectionService.Send(message);
+			await connectionService.Send (message);
 			Debug.WriteLine ("sent deregister message");
 		}
 
 		public async void Join (string userName, Guid challengeId)
 		{
 			var joinMsg = new JoinMessage (userName, challengeId);
-
 			string message = JsonConvert.SerializeObject (joinMsg, jsonSerializerSettings);
-			await connectionService.Send(message);
-
+			await connectionService.Send (message);
 			Debug.WriteLine ("sent join message");
 		}
 
-		 void OnMessageReceived(string message)
-		{
-			try	{
-				receivedMessagesCollection.Add (message);
-			}
-			catch(Exception e) {
-				Debug.WriteLine ("Exception in 'OnWebsocketReceived':  " + e.Message);
-			}
-		}
-		void HandleCollectionChanged(string message)
+
+		private void OnMessageReceived (string message)
 		{ 
+			
 			object receivedObject;
-			Debug.WriteLine ("<--------- received message:   "+ message);
-			try{
-				receivedObject = JsonConvert.DeserializeObject (message,  jsonSerializerSettings);
-			}
-			catch(JsonSerializationException jex){
-				Debug.WriteLine ("Exception caught trying to deserialize message: " + jex.Message); 
+			Debug.WriteLine ("<--------- received message:   " + message);
+			try {
+				receivedObject = JsonConvert.DeserializeObject (message, jsonSerializerSettings);
+			} catch (JsonSerializationException serializationException) {
+				Debug.WriteLine ("Exception caught while trying to deserialize message: " + serializationException.Message); 
 				return;
 			}
-
-			switch (receivedObject.GetType ()) {
-			case InviteMessage:
-				InvitationReceived ("invitation received: " + receivedObject.ToString ());
-				Debug.WriteLine ("RECEIVED INVITE");
-			case JoinAcceptMessage:
-				JoinAcceptedReceived ("join accepted: " + receivedObject.ToString ());
-			case JoinRejectMessage:
-				JoinRejectedReceived ("join accepted: " + receivedObject.ToString ());
-			default: Debug.WriteLine("RECEIVED UNKNOWN TYPE");
-
+			try {
+				var switchDictionary = new Dictionary<Type, Action> { 
+					{ 
+						typeof(InviteMessage), () => 
+						{
+							InvitationReceived ("invitation received: " + receivedObject.ToString ());
+							Debug.WriteLine ("RECEIVED INVITE");
+						} 
+					}, 
+					{ 
+						typeof(JoinAcceptMessage), () => 
+						{
+							JoinAcceptedReceived ("join accepted: " + receivedObject.ToString ());
+							Debug.WriteLine ("RECEIVED JOIN ACCEPT");
+						} 
+					}, 
+					{ 
+						typeof(JoinRejectMessage), () => 
+						{
+							JoinRejectedReceived ("join rejected: " + receivedObject.ToString ());
+							Debug.WriteLine ("RECEIVED JOIN REJECT");
+						} 
+					},
+				};
+				if (switchDictionary.ContainsKey (receivedObject.GetType())) {
+					switchDictionary [receivedObject.GetType()] ();
+				}
+				else{
+					Debug.WriteLine("UNKNOWN TYPE RECEIVED");
+				}
+			} catch (Exception ex) {
+				Debug.WriteLine (ex.Message);
 			}
 		}
-    }
+	}
 }
