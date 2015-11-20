@@ -1,21 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using dralloMultiPlayer.Messages;
-using Microsoft.AspNet.SignalR.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using WebSocket.Portable;
-using WebSocket.Portable.Interfaces;
 using Xamarin.Forms;
 using Drallo.ChallengeEngine.Activity.Record;
 using Drallo.ChallengeEngine.Activity.Event;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using dralloMultiPlayer.Messages;
+using System.Collections.Generic;
 
 namespace WebsocketTest
 {
@@ -33,7 +24,6 @@ namespace WebsocketTest
 		public event Action Reconnected;
 
 		ConnectionService connectionService;
-		private ObservableCollection<string> receivedMessagesCollection = new ObservableCollection<string> ();
 		private JsonSerializerSettings jsonSerializerSettings;
 
 		public ConnectionController (string connectionUri, string userName = "Randy")

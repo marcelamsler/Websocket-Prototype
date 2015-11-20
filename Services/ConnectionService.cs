@@ -1,19 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using dralloMultiPlayer.Messages;
 using Microsoft.AspNet.SignalR.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using WebSocket.Portable;
-using WebSocket.Portable.Interfaces;
-using Xamarin.Forms;
+using System.Threading.Tasks;
+
 namespace WebsocketTest
 {
 	public class ConnectionService
