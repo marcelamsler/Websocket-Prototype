@@ -27,6 +27,7 @@ namespace WebsocketTest
 		public ConnectionService (string connectionUri)
 		{
 			connection = new Connection (connectionUri);
+			connection.TraceLevel = Microsoft.AspNet.SignalR.Client.TraceLevels.All;
 			connection.Closed += Connection_Closed;
 			connection.Error += Connection_Error;
 			connection.Received += Connection_Received;

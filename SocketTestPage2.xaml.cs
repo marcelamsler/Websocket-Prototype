@@ -8,6 +8,8 @@ using WebSocket.Portable.Interfaces;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using dralloMultiPlayer.Messages;
+using Drallo.ChallengeEngine.Activity.Event;
+using Drallo.ChallengeEngine.Activity.Record;
 
 namespace WebsocketTest
 {
@@ -27,10 +29,12 @@ namespace WebsocketTest
 				sendDeregister.Clicked += OnDeregister;
 				sendJoin.Clicked += OnJoin;
 
-				connection = new ConnectionController();
+				connection = new ConnectionController("http://drallomultiplayermanager.azurewebsites.net/connect", "hansNoetig");
 				connection.Closed += (closedMessage) => {};
 				connection.InvitationReceived += (inviteMessage) => {};
 				connection.JoinAcceptedReceived += (joinAcceptedMessage) => {};
+				connection.Reconnecting += () => {};
+				connection.Reconnected += () => {};
 			}
 			catch (Exception e){
 				Debug.WriteLine (e.Message);
@@ -107,7 +111,7 @@ namespace WebsocketTest
 
 		private void OnJoin (object sender, EventArgs e)
 		{
-			connection.Join ("usernamelalala", Guid.NewGuid());
+			connection.Join (Guid.NewGuid());
 		}
     }
 }
